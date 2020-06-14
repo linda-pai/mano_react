@@ -8,6 +8,7 @@ import MainContent from './components/MainContent'
 import Home from './pages/Home'
 import About from './pages/About'
 import ProductList from './pages/ProductList/ProductList'
+import CourseList from './pages/CourseList/CourseList'
 import Cart from './pages/Cart'
 
 import NotFoundPage from './pages/NotFoundPage'
@@ -16,7 +17,6 @@ import MemberLogin from './pages/MemberLogin'
 import ProtectedRoute from './utils/ProtectedRoute'
 
 function App(props) {
-
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -65,7 +65,7 @@ function App(props) {
   return (
     <Router>
       <>
-        <MyNavbar auth={auth} name={name}/>
+        <MyNavbar auth={auth} name={name} />
         <MainContent>
           <Switch>
             <Route path="/about">
@@ -74,9 +74,13 @@ function App(props) {
             <Route path="/shop/:second?/:third?/:fourth?/:page?">
               <ProductList />
             </Route>
+            <Route path="/course/:second?/:third?/:fourth?/:page?">
+              <CourseList />
+            </Route>
             <Route path="/cart">
               <Cart />
             </Route>
+            <Route path="/searchtest"></Route>
             <Route path="/memberlogin">
               <MemberLogin
                 name={name}

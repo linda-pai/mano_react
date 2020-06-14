@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
 import './categoryBar-style.scss'
 
-class CategoryBar extends Component {
+
+class CsCategoryBar extends Component {
   constructor() {
     super()
     this.state = {
@@ -15,31 +16,34 @@ class CategoryBar extends Component {
 
   getData = async (categoryParentId) => {
     const response = await fetch(
-      `http://localhost:3002/category/${categoryParentId}`
+      `http://localhost:3002/cscategory/${categoryParentId}`
     )
     const json = await response.json()
-    const category = json.rows
+    const cscategory = json.rows
 
     this.setState({
-      data: category,
+      data: cscategory,
     })
+    
 
     return this.state.data
   }
 
   treeMenu = async (categoryParentId) => {
     let output = await this.getData(categoryParentId)
-    //console.log(output)
+
     if (output) {
-      this.state.listArray.push(`<ul class="cat-lists">`)
+      // this.state.listArray.push(`<ul class="cat-lists">`)
       for (let i = 0; i < output.length; i++) {
         this.state.listArray.push(
-          `<li ><a class="cat-list" href="${output[i]['linkUrl']}?categoryId=${output[i]['categoryId']}">${output[i]['categoryName']}</a></li>`
+          `<ul class="cat-lists"><li ><a class="cat-list" href="${output[i]['linkUrl']}?categoryId=${output[i]['categoryId']}">${output[i]['categoryName']}</a></li></ul>`
         )
         await this.treeMenu(output[i]['categoryId'])
       }
-      this.state.listArray.push(`</ul>`)
+      // this.state.listArray.push(`</ul>`)
+      // console.log(this.state.listArray)
     }
+    // console.log(output)
     return this.state.listArray
   }
 
@@ -61,4 +65,4 @@ class CategoryBar extends Component {
   }
 }
 
-export default withRouter(CategoryBar)
+export default withRouter(CsCategoryBar)

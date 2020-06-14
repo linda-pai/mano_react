@@ -1,6 +1,8 @@
 .cat-container {
-    width: 25%;
+    width: 20%;
     background-color: #eff3ec;
+    padding:10px;
+    margin: 40px 20px 0 0 ;
 
 
     .cat-lists {
@@ -12,6 +14,7 @@
             color: black;
             text-decoration: none;
             display: block;
+            line-height: 50px;
             
 
         }

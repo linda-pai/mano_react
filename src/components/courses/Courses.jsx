@@ -1,15 +1,18 @@
 import React, { Component } from 'react'
 import { Modal, Button } from 'react-bootstrap'
 import { withRouter } from 'react-router-dom'
-import Item from '../Item/Item'
-import './items-style.css'
+import Course from '../Course/Course'
+import './courses-style.css'
+import SearchBar from './SearchBar'
+import CsMyBreadcrumb from '../CsMyBreadcrumb'
 
-class Items extends Component {
+class Courses extends Component {
   constructor() {
     super()
     this.state = {
       data: [],
       totalPages: '',
+      searchValue: '',
       page: 1,
       mycart: [],
       dataLoading: false,
@@ -17,9 +20,11 @@ class Items extends Component {
       productName: '',
       catIds: '',
       catData: [],
+      showPage: true,
     }
   }
 
+  //加入購物車
   handleClose = () => this.setState({ show: false })
   handleShow = () => this.setState({ show: true })
 
@@ -29,12 +34,12 @@ class Items extends Component {
 
     const currentCart = JSON.parse(localStorage.getItem('cart')) || []
 
-    console.log('currentCart', currentCart)
+    // console.log('currentCart', currentCart)
 
     const newCart = [...currentCart, value]
     localStorage.setItem('cart', JSON.stringify(newCart))
 
-    console.log('newCart', newCart)
+    // console.log('newCart', newCart)
     // 設定資料
 
     this.setState({
@@ -44,10 +49,12 @@ class Items extends Component {
     this.handleShow()
     //alert('已成功加入購物車')
   }
+  //加入購物車 end
 
+  //fetch 種類
   getCatData = async (categoryParentId) => {
     const response = await fetch(
-      `http://localhost:3002/category/${categoryParentId}`
+      `http://localhost:3002/cscategory/${categoryParentId}`
     )
     const json = await response.json()
     const category = json.rows
@@ -61,6 +68,7 @@ class Items extends Component {
 
   getRecursiveCategoryIds = async (categoryId) => {
     const output = await this.getCatData(categoryId)
+
     //console.log(output)
     if (output.length > 0) {
       for (let i = 0; i < output.length; i++) {
@@ -74,21 +82,29 @@ class Items extends Component {
     return this.state.catIds
   }
 
+  //fetch 商品
   getItemsData = async () => {
     let currentPage = localStorage.getItem('page') || 1
     const response = await fetch(
-      `http://localhost:3002/items/${this.state.catIds}/${currentPage}`
+      `http://localhost:3002/courses/${this.state.catIds}/${currentPage}`
+      //${this.state.catIds}/${currentPage}
     )
-    const json = await response.json()
-    const items = json.rows
-    const totalPages = json.totalPages
-    this.setState({
-      data: items,
-      totalPages: totalPages,
-    })
 
+    const json = await response.json()
+    const courses = json.rows
+    const allData = json.allData
+    const totalPages = json.totalPages
+    const totalRows = json.totalRows
+    this.setState({
+      data: courses,
+      totalPages: totalPages,
+      totalRows: totalRows,
+    })
+    // console.log(totalPages)
+    console.log(json.allData)
     return this.state.data
   }
+
   async componentDidMount() {
     let params = new URLSearchParams(this.props.location.search)
     let catIdParams = params.get('categoryId')
@@ -103,6 +119,7 @@ class Items extends Component {
     await this.getItemsData()
   }
 
+  //頁碼
   handleChange = async (event) => {
     let params = new URLSearchParams(this.props.location.search)
     let catIdParams = params.get('categoryId')
@@ -114,13 +131,14 @@ class Items extends Component {
     localStorage.setItem('page', this.state.page)
 
     const response = await fetch(
-      `http://localhost:3002/items/${this.state.catIds}/${this.state.page}`
+      `http://localhost:3002/courses/${this.state.catIds}/${this.state.page}`
     )
     const json = await response.json()
-    const items = json.rows
+    const courses = json.rows
     const page = json.page
+
     this.setState({
-      data: items,
+      data: courses,
     })
 
     this.props.history.push(
@@ -128,6 +146,22 @@ class Items extends Component {
     )
   }
 
+  //搜尋input改變
+  onChange = async (event) => {
+    this.setState({
+      searchValue: event.target.value,
+    })
+
+    console.log(`"search!" + ${event.target.value}`)
+    const response = await fetch('http://localhost:3002/courses')
+    const json = await response.json()
+    const allData = json.allData
+
+    this.setState({
+      data: allData,
+      showPage: false,
+    })
+  }
   render() {
     const lists = []
 
@@ -184,6 +218,28 @@ class Items extends Component {
       </Modal>
     )
 
+    const originResults = (
+      <div>
+        <p className="results resultsOrigin">
+          {this.state.data.length} of {this.state.totalRows} results
+        </p>
+      </div>
+    )
+
+    const count = this.state.data.filter((course) => {
+      return (
+        course.courseName && course.courseDesc.includes(this.state.searchValue)
+      )
+    }).length
+
+    const searchResult = (
+      <p className="results resultsSearch">搜尋共 {count} 筆符合</p>
+    )
+    let result
+    count !== this.state.data.length
+      ? (result = searchResult)
+      : (result = originResults)
+
     const spinner = (
       <>
         <div className="d-flex justify-content-center">
@@ -195,30 +251,49 @@ class Items extends Component {
     )
 
     return (
-      <div>
+      <div className="container">
         {messageModal}
-        {this.state.data.map((item) => (
-          <Item
-            key={item.itemId}
-            itemImg={item.itemImg}
-            itemName={item.itemName}
-            itemDescription={item.itemDescription}
-            itemPrice={item.itemPrice}
-            handleClick={() => {
-              this.updateCartToLocalStorage({
-                id: item.itemId,
-                name: item.itemName,
-                amount: 1,
-                price: item.itemPrice,
-              })
-            }}
-          />
-        ))}
+        <div className="tools">
+          <CsMyBreadcrumb />
+          {result}
+          <SearchBar onChange={this.onChange} />
+        </div>
+        {this.state.data
+          .filter((course) => {
+            return (
+              course.courseName &&
+              course.courseDesc.includes(this.state.searchValue)
+            )
+          })
+          .map((course) => (
+            <Course
+              key={course.courseId}
+              courseImg={course.courseImg}
+              courseImg2={course.courseImg2}
+              courseName={course.courseName}
+              courseDesc={course.courseDesc}
+              coursePrice={course.coursePrice}
+              courseQty={course.courseQty}
+              handleClick={() => {
+                this.updateCartToLocalStorage({
+                  id: course.courseId,
+                  name: course.courseName,
+                  amount: 1,
+                  price: course.coursePrice,
+                })
+              }}
+            />
+          ))}
 
-        <ul className="page-lists">{lists}</ul>
+        <ul
+          style={{ visibility: this.state.showPage ? 'visible' : 'hidden' }}
+          className="page-lists"
+        >
+          {lists}
+        </ul>
       </div>
     )
   }
 }
 
-export default withRouter(Items)
+export default withRouter(Courses)

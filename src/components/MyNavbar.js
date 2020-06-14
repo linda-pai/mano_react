@@ -36,7 +36,7 @@ function MyNavbar(props) {
   return (
     <>
       <Navbar bg="primary" variant="dark" fixed="top">
-        <Navbar.Brand href="#home">Navbar</Navbar.Brand>
+        <Navbar.Brand href="#home">抹の</Navbar.Brand>
         <Nav className="mr-auto">
           {/* 把Nav.Link當作NavLink來使用 */}
           {/* 記得首頁`/`要加exact作精確比對，不然都會一直點亮 */}
@@ -52,8 +52,14 @@ function MyNavbar(props) {
           <Nav.Link as={NavLink} to="/shop" onClick={() => localStorage.setItem("page",1)}>
             產品列表
           </Nav.Link>
+          <Nav.Link as={NavLink} to="/course" onClick={() => localStorage.setItem("page",2)}>
+            課程列表
+          </Nav.Link>
           <Nav.Link as={NavLink} to="/cart">
             購物車
+          </Nav.Link>
+          <Nav.Link as={NavLink} to="/searchtest">
+            Search Test
           </Nav.Link>
         </Nav>
         <Form inline>{displayButton}</Form>
